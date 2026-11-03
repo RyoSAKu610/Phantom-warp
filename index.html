@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PHANTOM WARP — 論文タイムマシン</title>
+<meta name="description" content="毎日の最新研究論文へ時間旅行。触るたびに光り、ワープし、レアな論文が降臨する ResearchPhantom のアレンジ版。">
+<meta property="og:title" content="PHANTOM WARP — 論文タイムマシン">
+<meta property="og:description" content="毎日の最新研究論文へ時間旅行。触るたびに光り、ワープし、レアな論文が降臨する。">
+<meta name="theme-color" content="#04030e">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%2300f0ff'/><stop offset='1' stop-color='%23ff2bd6'/></linearGradient></defs><rect width='64' height='64' rx='16' fill='%2304030e'/><circle cx='32' cy='32' r='18' fill='none' stroke='url(%23g)' stroke-width='5'/><path d='M32 20v12l8 6' stroke='url(%23g)' stroke-width='5' fill='none' stroke-linecap='round'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Orbitron:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="stage" aria-hidden="true"></canvas>
+
+<div id="app" class="app" hidden>
+  <header class="hud">
+    <div class="hud-player">
+      <div class="lv" aria-label="レベル"><small>LV</small><span id="lvNum">1</span></div>
+      <div class="xp">
+        <div class="xp-title" id="lvTitle">見習い時間旅行者</div>
+        <div class="xp-bar" role="progressbar" aria-label="次のレベルまで" id="xpBar"><i id="xpFill"></i></div>
+      </div>
+    </div>
+    <div class="hud-time">
+      <div class="time-label">NOW VISITING</div>
+      <div class="odometer" id="odometer">----.--.--</div>
+    </div>
+    <div class="hud-tools">
+      <span class="streak" id="streak" title="連続来訪日数">🔥1</span>
+      <button class="icon-btn" id="soundBtn" type="button" aria-label="音のオン・オフ">🔊</button>
+      <button class="icon-btn" id="dexBtn" type="button" aria-label="図鑑を開く">💖<b id="dexCount">0</b></button>
+    </div>
+  </header>
+
+  <main class="deck" id="deck" aria-live="polite"></main>
+
+  <nav class="controls" aria-label="操作">
+    <button class="ctrl" id="worldBtn" type="button"><span>🌐</span><small>ワールド</small></button>
+    <button class="ctrl" id="prevBtn" type="button"><span>◀</span><small>もどる</small></button>
+    <button class="ctrl ctrl-main" id="nextBtn" type="button"><span>NEXT</span><small>次の発見</small><i class="combo" id="combo" aria-live="polite"></i></button>
+    <button class="ctrl" id="randomBtn" type="button"><span>🎲</span><small>ランダム</small></button>
+    <button class="ctrl" id="timeBtn" type="button"><span>⏳</span><small>時代</small></button>
+  </nav>
+</div>
+
+<section class="intro" id="intro">
+  <div class="intro-inner">
+    <p class="intro-kicker">RESEARCH PHANTOM // ARRANGE EDITION</p>
+    <h1 class="intro-title"><span>PHANTOM</span><span>WARP</span></h1>
+    <p class="intro-sub">論文タイムマシンで、毎日の最新研究へ時間旅行。<br>触れば光り、めくればワープ。<b>レアな論文</b>が降臨する。</p>
+    <button class="board-btn" id="boardBtn" type="button"><span>▶ タイムマシンに乗る</span></button>
+    <p class="intro-note" id="introNote">効果音が出ます（画面右上の 🔊 でいつでも消せます）</p>
+  </div>
+</section>
+
+<section class="travel" id="travel" aria-live="polite" hidden>
+  <div class="travel-ring"></div>
+  <p class="travel-kicker">TIME TRAVEL</p>
+  <div class="travel-date" id="travelDate">----.--.--</div>
+  <p class="travel-scene" id="travelScene"></p>
+  <div class="travel-bar"><i id="travelFill"></i></div>
+</section>
+
+<section class="cutin" id="cutin" hidden></section>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<dialog class="sheet" id="dexDlg">
+  <form method="dialog" class="sheet-head"><h2>💖 発見図鑑</h2><button class="icon-btn" aria-label="閉じる">✕</button></form>
+  <div class="dex-stats" id="dexStats"></div>
+  <div class="achievements" id="achievements"></div>
+  <ul class="dex-list" id="dexList"></ul>
+</dialog>
+
+<dialog class="sheet" id="worldDlg">
+  <form method="dialog" class="sheet-head"><h2>🌐 ワールドを選ぶ</h2><button class="icon-btn" aria-label="閉じる">✕</button></form>
+  <div class="world-grid" id="worldGrid"></div>
+</dialog>
+
+<dialog class="sheet" id="timeDlg">
+  <form method="dialog" class="sheet-head"><h2>⏳ どの日へワープする？</h2><button class="icon-btn" aria-label="閉じる">✕</button></form>
+  <div class="date-grid" id="dateGrid"></div>
+</dialog>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

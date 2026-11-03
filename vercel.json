@@ -1,0 +1,6 @@
+{
+  "headers": [
+    { "source": "/(.*)", "headers": [{ "key": "X-Content-Type-Options", "value": "nosniff" }] },
+    { "source": "/(js/.*|style.css|sample.json)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=300" }] }
+  ]
+}
