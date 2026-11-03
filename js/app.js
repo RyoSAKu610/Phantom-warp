@@ -11,8 +11,8 @@ const $ = (sel) => document.querySelector(sel);
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const sleep = (ms) => new Promise((r) => setTimeout(r, reduceMotion ? Math.min(ms, 120) : ms));
 const params = new URLSearchParams(location.search);
-// ?data=<URL> でデータ元を差し替え(ローカル確認用)
-const BASE = params.get('data') || DATA_BASE;
+// ?data=<URL> でデータ元を差し替え(ローカル確認用)。データを同梱する配信先は window.PHANTOM_WARP_DATA で指定
+const BASE = params.get('data') || window.PHANTOM_WARP_DATA || DATA_BASE;
 
 const storage = (() => { try { return localStorage; } catch (_) { return null; } })();
 const progress = loadProgress(storage);
