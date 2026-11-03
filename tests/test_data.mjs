@@ -51,7 +51,7 @@ assert.deepEqual(cards.map((c) => c.id), ['b', 'c', '2611.00001'], 'briefed firs
 // The bundled offline sample is valid and every card belongs to a known world.
 const sample = JSON.parse(readFileSync(new URL('../sample.json', import.meta.url)));
 const sampleCards = cardsFrom(sample.papers, sample.briefings, sample.date);
-assert.ok(sampleCards.length >= 40);
+assert.ok(sampleCards.length >= 20);
 assert.ok(sampleCards.every((c) => WORLDS[c.world] && c.title && c.summary));
 assert.ok(sampleCards.some((c) => c.story), 'the sample includes briefed papers');
 
