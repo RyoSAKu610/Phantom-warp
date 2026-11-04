@@ -88,6 +88,8 @@ export const sfx = {
     tone(1046.5, 0.45, 0.9, { type: 'triangle', gain: 0.2 });
     tone(1318.51, 0.45, 0.9, { type: 'triangle', gain: 0.15 });
   },
+  // 時速88マイル到達の衝撃音
+  boom() { noise(0, 1.1, { gain: 0.55, from: 4000, to: 60 }); tone(70, 0, 1.0, { type: 'sine', gain: 0.5, slide: -45 }); tone(140, 0, 0.4, { type: 'square', gain: 0.12, slide: -100 }); },
   achievement() { [784, 988, 1175, 1568].forEach((f, i) => tone(f, i * 0.06, 0.25, { type: 'triangle', gain: 0.14 })); },
 };
 

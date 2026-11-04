@@ -26,9 +26,9 @@
         <div class="xp-bar" role="progressbar" aria-label="次のレベルまで" id="xpBar"><i id="xpFill"></i></div>
       </div>
     </div>
-    <div class="hud-time">
-      <div class="time-label">NOW VISITING</div>
-      <div class="odometer" id="odometer">----.--.--</div>
+    <div class="hud-time circuits" aria-label="時間回路">
+      <div class="tc-row dest"><span class="tc-label">DEST</span><span class="tc-val" id="odometer">----.--.--</span></div>
+      <div class="tc-row now"><span class="tc-label">NOW</span><span class="tc-val" id="presentTime">----.--.--</span></div>
     </div>
     <div class="hud-tools">
       <span class="streak" id="streak" title="連続来訪日数">🔥1</span>
@@ -50,20 +50,35 @@
 
 <section class="intro" id="intro">
   <div class="intro-inner">
-    <p class="intro-kicker">RESEARCH PHANTOM // ARRANGE EDITION</p>
+    <p class="intro-kicker" id="introKicker">SYSTEM ONLINE // TIME CIRCUITS STANDBY</p>
     <h1 class="intro-title"><span>PHANTOM</span><span>WARP</span></h1>
-    <p class="intro-sub">論文タイムマシンで、毎日の最新研究へ時間旅行。<br>触れば光り、めくればワープ。<b>レアな論文</b>が降臨する。</p>
-    <button class="board-btn" id="boardBtn" type="button"><span>▶ タイムマシンに乗る</span></button>
+    <p class="intro-sub">ブラックホールの向こう、毎日の最新研究へ。<br>時速88マイルで時空を越え、<b>レアな論文</b>を発見せよ。</p>
+    <div class="intro-circuits circuits" aria-hidden="true">
+      <div class="tc-row dest"><span class="tc-label">DESTINATION TIME</span><span class="tc-val">LATEST</span></div>
+      <div class="tc-row now"><span class="tc-label">PRESENT TIME</span><span class="tc-val" id="introPresent">----.--.--</span></div>
+      <div class="tc-row last"><span class="tc-label">LAST TIME DEPARTED</span><span class="tc-val" id="introLast">--.--.--</span></div>
+    </div>
+    <button class="board-btn" id="boardBtn" type="button"><span>⚡ 時間回路を起動する</span></button>
     <p class="intro-note" id="introNote">効果音が出ます（画面右上の 🔊 でいつでも消せます）</p>
   </div>
 </section>
 
 <section class="travel" id="travel" aria-live="polite" hidden>
   <div class="travel-ring"></div>
-  <p class="travel-kicker">TIME TRAVEL</p>
-  <div class="travel-date" id="travelDate">----.--.--</div>
+  <div class="fire-trails" aria-hidden="true"><i></i><i></i></div>
+  <p class="travel-kicker" id="travelKicker">TIME CIRCUITS ON</p>
+  <div class="circuits travel-circuits">
+    <div class="tc-row dest"><span class="tc-label">DESTINATION TIME</span><span class="tc-val" id="travelDate">----.--.--</span></div>
+    <div class="tc-row now"><span class="tc-label">PRESENT TIME</span><span class="tc-val" id="travelPresent">----.--.--</span></div>
+    <div class="tc-row last"><span class="tc-label">LAST TIME DEPARTED</span><span class="tc-val" id="travelLast">----.--.--</span></div>
+  </div>
+  <div class="drive">
+    <div class="flux" aria-hidden="true"><svg viewBox="0 0 100 100"><path d="M50 52 L18 14 M50 52 L82 14 M50 52 L50 92" /><circle cx="50" cy="52" r="7" /></svg><small>FLUX</small></div>
+    <div class="speedo"><b id="mph">0</b><small>MPH</small></div>
+    <div class="charge"><small>POWER</small><b id="gigawatts">0.00</b><small>GW</small><div class="charge-bar"><i id="travelFill"></i></div></div>
+  </div>
   <p class="travel-scene" id="travelScene"></p>
-  <div class="travel-bar"><i id="travelFill"></i></div>
+  <p class="travel-dilation" id="travelDilation"></p>
 </section>
 
 <section class="cutin" id="cutin" hidden></section>

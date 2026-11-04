@@ -350,3 +350,56 @@ button { font: inherit; color: inherit; cursor: pointer; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   .story li, .metric { opacity: 1; transform: none; }
 }
+
+/* ---------- 時間回路(赤=行き先 / 緑=現在 / 琥珀=前回の出発) ---------- */
+.circuits { display: grid; gap: 3px; padding: 5px 7px; border-radius: 8px; background: linear-gradient(#1a1a1d, #0c0c0e); border: 1px solid #3a3a42; box-shadow: inset 0 0 0 1px #000, 0 6px 20px rgba(0,0,0,.6); }
+.tc-row { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 6px; }
+.tc-label { font-family: var(--font-hud); font-size: 7px; letter-spacing: .14em; color: #0b0b0b; background: #c9c9c9; padding: 1px 4px; border-radius: 2px; white-space: nowrap; }
+.tc-val { font-family: var(--font-hud); font-weight: 700; font-size: 14px; letter-spacing: .08em; text-align: right; padding: 1px 6px; border-radius: 3px; background: #050505; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tc-row.dest .tc-val { color: #ff3b2f; text-shadow: 0 0 6px #ff1a00, 0 0 14px #ff1a00; }
+.tc-row.now .tc-val { color: #39ff6a; text-shadow: 0 0 6px #00ff40, 0 0 14px #00ff40; }
+.tc-row.last .tc-val { color: #ffb627; text-shadow: 0 0 6px #ff9a00, 0 0 14px #ff9a00; }
+.hud-time.circuits { padding: 4px 6px; }
+.hud-time .tc-label { font-size: 6.5px; }
+.hud-time .tc-val { font-size: clamp(11px, 3.2vw, 14px); }
+.intro-circuits { width: min(100%, 360px); margin: 22px auto 0; text-align: left; }
+.intro-circuits .tc-val { font-size: 17px; }
+.intro .intro-kicker { color: #39ff6a; text-shadow: 0 0 8px #00ff40; }
+
+/* ---------- 時間旅行 ---------- */
+.travel { gap: 14px; padding: 0 16px; }
+.travel-circuits { position: relative; width: min(92vw, 440px); margin: 0 auto; }
+.travel-circuits .tc-label { font-size: 8px; }
+.travel-circuits .tc-val { font-size: clamp(18px, 6vw, 26px); }
+.travel-kicker { color: #39ff6a; text-shadow: 0 0 10px #00ff40; }
+.drive { position: relative; display: flex; align-items: center; justify-content: center; gap: clamp(14px, 5vw, 34px); }
+.speedo { text-align: center; min-width: 120px; }
+.speedo b { display: block; font-family: var(--font-hud); font-weight: 900; font-size: clamp(56px, 18vw, 96px); line-height: 1; color: #fff; text-shadow: 0 0 18px var(--cyan); font-variant-numeric: tabular-nums; }
+.speedo small, .flux small, .charge small { font-family: var(--font-hud); font-size: 10px; letter-spacing: .3em; color: var(--muted); }
+.speedo.hit b { color: #fff2c4; text-shadow: 0 0 20px #fff, 0 0 50px #ffb627, 0 0 90px #ff3b2f; animation: slam .4s cubic-bezier(.2,1.8,.4,1); }
+.flux { text-align: center; }
+.flux svg { width: 64px; height: 64px; display: block; filter: drop-shadow(0 0 8px #fff) drop-shadow(0 0 16px #6fd8ff); }
+.flux path { stroke: #e8fbff; stroke-width: 7; stroke-linecap: round; fill: none; stroke-dasharray: 10 8; animation: flux .35s linear infinite; }
+.flux circle { fill: #fff; }
+@keyframes flux { to { stroke-dashoffset: -18; } }
+.travel.charged .flux path { animation-duration: .08s; }
+.charge { width: 92px; text-align: center; }
+.charge b { font-family: var(--font-hud); font-size: 20px; color: #ffb627; text-shadow: 0 0 10px #ff9a00; }
+.charge-bar { height: 6px; margin-top: 4px; border-radius: 99px; background: rgba(255,255,255,.15); overflow: hidden; }
+.charge-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #ffb627, #ff3b2f); }
+.travel-dilation { position: relative; margin: 0; font-family: var(--font-hud); font-size: 12px; letter-spacing: .12em; color: #ffcf8a; min-height: 1.4em; }
+.fire-trails { position: absolute; left: 0; right: 0; bottom: 18%; height: 60px; pointer-events: none; }
+.fire-trails i { position: absolute; left: 0; width: 0; height: 6px; border-radius: 99px; background: linear-gradient(90deg, rgba(255,90,0,0), #ff6a00 40%, #ffe9a8); box-shadow: 0 0 18px #ff5a00, 0 0 40px #ff3b00; }
+.fire-trails i:first-child { top: 0; }
+.fire-trails i:last-child { top: 40px; }
+.travel.burn .fire-trails i { animation: burn 1.6s ease-out forwards; }
+@keyframes burn { 0% { width: 0; opacity: 1; } 40% { width: 100%; opacity: 1; } 100% { width: 100%; opacity: 0; } }
+.travel.wormhole .travel-ring { background: repeating-radial-gradient(circle, transparent 0 30px, rgba(255, 170, 70, .16) 32px 34px, transparent 36px 70px); animation-duration: .35s; }
+
+/* ---------- 文字の解読(緑の文字から本文へ) ---------- */
+.decoding { color: #39ff6a; text-shadow: 0 0 8px #00ff40; }
+
+/* 起動画面: 上にブラックホール、下に文字 */
+.intro { align-items: end; padding-bottom: max(28px, env(safe-area-inset-bottom)); }
+.intro-inner { padding-top: 36vh; }
+@media (min-height: 900px) { .intro { align-items: center; } }

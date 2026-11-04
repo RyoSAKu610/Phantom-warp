@@ -41,6 +41,7 @@ const el = (tag, cls, text) => {
   return n;
 };
 const fmtDate = (d) => (d ? d.replace(/-/g, '.') : '----.--.--');
+const GLYPHS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン0123456789';
 const todayLocal = () => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -255,6 +256,23 @@ function playCardIntro(node, card) {
   if (metric) setTimeout(() => { metric.classList.add('on'); sfx.reveal('R'); shake($('#app'), 0.5); }, 450 + steps.length * 380 + 150);
 }
 
+// 緑の文字の羅列から本文が解読されていく
+function decode(target, text) {
+  if (reduceMotion || !target) return;
+  const chars = Array.from(text);
+  const start = performance.now();
+  const dur = Math.min(900, 250 + chars.length * 18);
+  target.classList.add('decoding');
+  const step = () => {
+    const k = Math.min(1, (performance.now() - start) / dur);
+    const n = Math.floor(chars.length * k);
+    target.textContent = chars.slice(0, n).join('') + chars.slice(n).map((c) => (c === ' ' ? ' ' : GLYPHS[(Math.random() * GLYPHS.length) | 0])).join('');
+    if (k < 1) requestAnimationFrame(step);
+    else { target.textContent = text; target.classList.remove('decoding'); }
+  };
+  step();
+}
+
 function currentDate() { return state.days[state.dayIndex] ? state.days[state.dayIndex].date : ''; }
 
 async function showCard(direction = 1) {
@@ -275,6 +293,7 @@ async function showCard(direction = 1) {
 
   const node = cardNode(card);
   deck.append(node);
+  decode(node.querySelector('.card-title'), card.title);
   sfx.swipe();
   if (!firstTime || card.rarity === 'N' || card.rarity === 'R') {
     sfx.reveal(card.rarity);
@@ -373,43 +392,92 @@ function rollDate(from, to, k) {
   return `${mid.getFullYear()}.${String(mid.getMonth() + 1).padStart(2, '0')}.${String(mid.getDate()).padStart(2, '0')}`;
 }
 
+const DILATION = ['時間の遅れ ─ ここでの1時間は地球の7年', '重力レンズ観測中 ─ 光が曲がっている', '事象の地平面を回避', '五次元空間に突入 ─ 時間が「場所」になる', '帰還座標をロック'];
+
 async function travel(dayIndex, { pos = 0, world = state.world } = {}) {
   if (state.busy) return;
   state.busy = true;
   const from = currentDate();
   const to = state.days[dayIndex].date;
   const box = $('#travel');
+  box.className = 'travel';
   box.hidden = false;
-  stage.setWarp(1);
+  $('#travelPresent').textContent = fmtDate(todayLocal());
+  $('#travelLast').textContent = from ? fmtDate(from) : (progress.lastVisit ? fmtDate(progress.lastVisit) : '----.--.--');
+  $('#travelKicker').textContent = 'TIME CIRCUITS ON';
+  $('#travelDilation').textContent = '';
+  $('#mph').parentElement.classList.remove('hit');
+  stage.setRain(1);
+  stage.setWarp(0.3);
   sfx.warp();
   buzz([20, 80, 20, 80, 20, 200]);
   const load = getDayCards(dayIndex).then((c) => ({ ok: true, cards: c }), (err) => ({ ok: false, err }));
   const worlds = Object.keys(WORLDS);
-  const minMs = reduceMotion ? 300 : 2300;
-  const t0 = performance.now();
-  let i = 0;
-  while (performance.now() - t0 < minMs) {
-    const k = Math.min(1, (performance.now() - t0) / minMs);
-    $('#travelDate').textContent = rollDate(from, to, k);
+
+  // 1) 時速88マイルまで加速(電力は1.21ギガワットまで充電)
+  const accel = reduceMotion ? 150 : 1800;
+  let t0 = performance.now();
+  for (let k = 0; k < 1; k = (performance.now() - t0) / accel) {
+    const e = k * k;
+    $('#mph').textContent = Math.round(88 * e);
+    $('#gigawatts').textContent = (1.21 * k).toFixed(2);
     $('#travelFill').style.width = `${k * 100}%`;
-    const w = WORLDS[worlds[i++ % worlds.length]];
-    $('#travelScene').textContent = `${w.emoji} ${w.label}を通過中…`;
-    stage.setWorld(worlds[(i - 1) % worlds.length]);
-    setHue(worlds[(i - 1) % worlds.length]);
-    await sleep(150);
+    $('#travelDate').textContent = rollDate(from, to, k * 0.6);
+    $('#travelScene').textContent = '加速中…';
+    stage.setWarp(0.3 + e * 0.5);
+    await sleep(40);
+  }
+  $('#mph').textContent = '88';
+  $('#gigawatts').textContent = '1.21';
+  $('#travelFill').style.width = '100%';
+  $('#mph').parentElement.classList.add('hit');
+  box.classList.add('charged', 'burn');
+  sfx.boom();
+  flash('#ffffff', 600);
+  shake($('#app'), 2);
+  buzz([120, 40, 200]);
+
+  // 2) ワームホールを抜ける(ブラックホールのそばを通り、五次元空間を経て到着)
+  $('#travelKicker').textContent = 'WORMHOLE TRANSIT';
+  box.classList.add('wormhole');
+  stage.setWarp(1);
+  stage.setBlackHole(1);
+  const transit = reduceMotion ? 150 : 1700;
+  t0 = performance.now();
+  let i = 0;
+  for (let k = 0; k < 1; k = (performance.now() - t0) / transit) {
+    $('#travelDate').textContent = rollDate(from, to, 0.6 + k * 0.4);
+    $('#travelDilation').textContent = DILATION[Math.min(DILATION.length - 1, Math.floor(k * DILATION.length))];
+    if (k > 0.7) {
+      stage.setBlackHole(0);
+      stage.setWorld('tesseract');
+      setHue('other');
+      $('#travelScene').textContent = '📚 五次元の書庫を通過中…';
+    } else {
+      const key = worlds[i++ % worlds.length];
+      stage.setWorld(key);
+      setHue(key);
+      $('#travelScene').textContent = `${WORLDS[key].emoji} ${WORLDS[key].label}を通過中…`;
+    }
+    await sleep(140);
   }
   const res = await load;
   $('#travelDate').textContent = fmtDate(to);
-  $('#travelFill').style.width = '100%';
+  $('#travelKicker').textContent = res.ok ? 'ARRIVED' : 'TIME CIRCUITS MALFUNCTION';
   $('#travelScene').textContent = res.ok ? '✦ 到着 ✦' : '⚠ 時空が乱れて到着できなかった…';
-  await sleep(350);
+  $('#travelDilation').textContent = '';
+  await sleep(450);
   box.hidden = true;
+  stage.setBlackHole(0);
+  stage.setRain(0.3);
   stage.setWarp(0);
   flash('#bdfcff', 500);
   shake($('#app'), 1.2);
   if (res.ok) {
     state.dayIndex = dayIndex;
     state.allCards = res.cards;
+    progress.lastVisit = to;
+    saveProgress(storage, progress);
     applyWorld(world);
     const at = typeof pos === 'function' ? pos(state.cards) : pos;
     state.pos = Math.min(at, Math.max(0, state.cards.length - 1));
@@ -553,6 +621,7 @@ $('#boardBtn').addEventListener('click', async () => {
     setTimeout(() => toast('🔥', 'STREAK', `${progress.streak.count}日連続で来訪！`), 2800);
   }
   saveProgress(storage, progress);
+  $('#introKicker').textContent = 'TIME CIRCUITS ON // DESTINATION LOCKED';
   $('#intro').classList.add('leaving');
   $('#boardBtn').disabled = true;
   await ready;
@@ -576,4 +645,10 @@ $('#boardBtn').addEventListener('click', async () => {
   }
 });
 
+// 起動画面: ブラックホールと緑の文字の雨、時間回路の表示
+stage.setBlackHole(0.95, 0.2);
+stage.setRain(0.6);
+$('#introPresent').textContent = fmtDate(todayLocal());
+$('#presentTime').textContent = fmtDate(todayLocal());
+$('#introLast').textContent = progress.lastVisit ? fmtDate(progress.lastVisit) : '----.--.--';
 renderHud();

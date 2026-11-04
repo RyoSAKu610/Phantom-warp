@@ -228,6 +228,29 @@ const SCENES = {
       }
     },
   },
+  // 五次元空間: 本棚のような格子が奥へ続く(タイムトラベルの終盤)
+  tesseract: {
+    init() { return {}; },
+    draw(g, t, w, h, s, c) {
+      const cx = w / 2 + (c.pointer.x - w / 2) * 0.05, cy = h / 2 + (c.pointer.y - h / 2) * 0.05;
+      const phase = ((t / 900) * c.energy) % 1;
+      g.lineWidth = 1;
+      for (let i = 0; i < 9; i++) {
+        const k = (i + phase) / 9, size = Math.pow(k, 2.2) * Math.max(w, h) * 1.2;
+        g.strokeStyle = `hsla(35 90% 70% / ${0.08 + k * 0.4})`;
+        g.strokeRect(cx - size / 2, cy - size / 2, size, size);
+      }
+      for (let i = 0; i <= 12; i++) {
+        const x = (i / 12) * w, y = (i / 12) * h;
+        g.strokeStyle = 'hsla(30 90% 65% / 0.22)';
+        g.beginPath(); g.moveTo(cx, cy); g.lineTo(x, 0); g.moveTo(cx, cy); g.lineTo(x, h); g.moveTo(cx, cy); g.lineTo(0, y); g.moveTo(cx, cy); g.lineTo(w, y); g.stroke();
+      }
+      for (let i = 0; i < 26; i++) {
+        const a = (i / 26) * TAU + t / 4000, r = (0.15 + ((i * 37) % 10) / 12) * Math.min(w, h) * 0.6;
+        glow(g, cx + Math.cos(a) * r, cy + Math.sin(a) * r, 5, 'hsla(40 100% 80% / 0.8)');
+      }
+    },
+  },
   other: {
     init(w, h) { return { clouds: Array.from({ length: 7 }, () => ({ x: rand(0, w), y: rand(0, h), r: rand(160, 380), hue: rand(-60, 60), v: rand(-0.15, 0.15) })) }; },
     draw(g, t, w, h, s, c) {
@@ -248,6 +271,69 @@ function glow(g, x, y, r, color) {
 }
 
 // ---------- 舞台 ----------
+const hueOf = (key) => (WORLDS[key] || { hue: 35 }).hue;
+
+// 緑の文字の雨(常に背景に流れ、ワープ中は濃く速くなる)
+class Rain {
+  constructor() { this.size = 16; this.cols = []; }
+  resize(w) {
+    this.cols = Array.from({ length: Math.ceil(w / this.size) }, () => ({ y: rand(-1200, 0), speed: rand(2, 6), len: Math.floor(rand(8, 26)) }));
+  }
+  draw(g, t, h, level) {
+    if (level < 0.02) return;
+    g.font = `${this.size}px "Zen Kaku Gothic New", monospace`;
+    this.cols.forEach((col, i) => {
+      col.y += col.speed * (0.6 + level * 2.4);
+      if (col.y - col.len * this.size > h) { col.y = rand(-600, 0); col.speed = rand(2, 6); }
+      for (let k = 0; k < col.len; k++) {
+        const y = col.y - k * this.size;
+        if (y < -this.size || y > h + this.size) continue;
+        const ch = GLYPHS[(i * 13 + Math.floor(y / this.size) * 7 + Math.floor(t / 90) * (k === 0 ? 1 : 0)) % GLYPHS.length];
+        g.fillStyle = k === 0 ? `rgba(220, 255, 220, ${0.9 * level})` : `rgba(0, 255, 90, ${(1 - k / col.len) * 0.55 * level})`;
+        g.fillText(ch, i * this.size, y);
+      }
+    });
+  }
+}
+
+// 降着円盤をまとったブラックホール(重力レンズで円盤が影の上下にも回り込む)
+function drawBlackHole(g, t, w, h, a, pointer, y = 0.42) {
+  if (a < 0.02) return;
+  const cx = w / 2 + (pointer.x - w / 2) * 0.03, cy = h * y + (pointer.y - h / 2) * 0.03;
+  const R = Math.min(w, h) * 0.16;
+  g.save();
+  g.globalAlpha = a;
+  // 周囲の光
+  glow(g, cx, cy, R * 4.2, 'rgba(255, 150, 60, 0.18)');
+  // 円盤の奥側(影の上に回り込んだ光)
+  g.lineWidth = R * 0.32;
+  const ring = g.createLinearGradient(cx - R * 2, 0, cx + R * 2, 0);
+  ring.addColorStop(0, 'rgba(255,140,40,0.2)'); ring.addColorStop(0.35, 'rgba(255,230,180,0.95)');
+  ring.addColorStop(0.65, 'rgba(255,200,120,0.9)'); ring.addColorStop(1, 'rgba(255,120,30,0.2)');
+  g.strokeStyle = ring;
+  g.beginPath(); g.ellipse(cx, cy, R * 1.35, R * 1.25, 0, Math.PI, TAU); g.stroke();
+  // 光子リング
+  g.lineWidth = 2;
+  g.strokeStyle = 'rgba(255, 245, 225, 0.95)';
+  g.beginPath(); g.arc(cx, cy, R * 1.04, 0, TAU); g.stroke();
+  // 影
+  g.fillStyle = '#000';
+  g.beginPath(); g.arc(cx, cy, R, 0, TAU); g.fill();
+  // 円盤の手前側(横に伸びる帯、明るさの粒が回る)
+  for (let i = 0; i < 3; i++) {
+    g.lineWidth = R * (0.22 - i * 0.06);
+    g.strokeStyle = ring;
+    g.beginPath(); g.ellipse(cx, cy, R * (2.6 - i * 0.35), R * (0.42 - i * 0.06), 0, 0, TAU); g.stroke();
+  }
+  for (let i = 0; i < 40; i++) {
+    const ang = (i / 40) * TAU + t / 700;
+    const x = cx + Math.cos(ang) * R * 2.4, y = cy + Math.sin(ang) * R * 0.36;
+    if (Math.sin(ang) < 0 && Math.abs(x - cx) < R) continue; // 影の奥は隠れる
+    glow(g, x, y, 4, 'rgba(255, 250, 230, 0.8)');
+  }
+  g.restore();
+}
+
 export class Stage {
   constructor(canvas) {
     this.canvas = canvas;
@@ -261,6 +347,9 @@ export class Stage {
     this.warpLevel = 0; // 0〜1: 星が光の線になる度合い
     this.warpTarget = 0;
     this.states = {};
+    this.rain = new Rain();
+    this.rainLevel = 0.3; this.rainTarget = 0.3;
+    this.hole = 0; this.holeTarget = 0;
     this.resize();
     this.stars = Array.from({ length: 260 }, () => this.newStar(true));
     addEventListener('resize', () => { this.resize(); this.states = {}; });
@@ -276,6 +365,7 @@ export class Stage {
     this.w = innerWidth; this.h = innerHeight;
     this.canvas.width = this.w * this.dpr;
     this.canvas.height = this.h * this.dpr;
+    if (this.rain) this.rain.resize(this.w);
   }
 
   newStar(anywhere) {
@@ -286,6 +376,10 @@ export class Stage {
     if (!this.states[key]) this.states[key] = SCENES[key].init(this.w, this.h);
     return this.states[key];
   }
+
+  // 文字の雨の濃さ(0〜1)とブラックホールの見え方(0〜1)
+  setRain(level) { this.rainTarget = level; }
+  setBlackHole(level, y = 0.42) { this.holeTarget = level; this.holeY = y; }
 
   setWorld(key) {
     if (!SCENES[key] || key === this.world) return;
@@ -316,7 +410,9 @@ export class Stage {
     g.fillStyle = `rgba(4, 3, 14, ${0.35 - warp * 0.25})`;
     g.fillRect(0, 0, w, h);
 
-    const hue = WORLDS[this.world].hue;
+    const hue = hueOf(this.world);
+    this.rainLevel += (this.rainTarget - this.rainLevel) * 0.05;
+    this.hole += (this.holeTarget - this.hole) * 0.05;
     const energy = reduceMotion ? 0.2 : 1 + warp * 6;
     this.drawStars(hue, warp, dt);
 
@@ -329,13 +425,15 @@ export class Stage {
       this.mix = Math.min(1, this.mix + dt / 900);
       if (this.prev) {
         g.globalAlpha = (1 - this.mix) * (1 - warp * 0.6);
-        SCENES[this.prev].draw(g, t, w, h, this.state(this.prev), { pointer: this.pointer, hue: WORLDS[this.prev].hue, energy });
+        SCENES[this.prev].draw(g, t, w, h, this.state(this.prev), { pointer: this.pointer, hue: hueOf(this.prev), energy });
       }
     }
     g.globalAlpha = this.mix * (1 - warp * 0.6);
     SCENES[this.world].draw(g, t, w, h, this.state(this.world), { pointer: this.pointer, hue, energy });
     g.restore();
     g.globalAlpha = 1;
+    drawBlackHole(g, t, w, h, this.hole, this.pointer, this.holeY || 0.42);
+    this.rain.draw(g, t, h, reduceMotion ? Math.min(this.rainLevel, 0.25) : this.rainLevel);
 
     // 周辺減光
     const v = g.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.3, w / 2, h / 2, Math.max(w, h) * 0.75);
