@@ -1,5 +1,7 @@
 # ⏳ PHANTOM WARP — 論文タイムマシン
 
+遊んでいて知識にもなる新感覚ゲーム🎮（期間限定公開）
+
 [ResearchPhantom](https://github.com/howly23v/ResearchPhantom) のアレンジ版です。毎日の最新研究論文を、**時間旅行しながら1枚ずつ発見していく**体験にしました。
 
 - 🌌 **背景がずっと動く**: 論文の分野ごとに景色が変わります（AIの惑星・ことばの海・まなざしの塔・粒子の宇宙・生命の森・量子の深淵・結晶の洞窟・雷の高原）。触った位置・マウス・スマホの傾きにも反応します。
@@ -26,7 +28,7 @@
 | `js/data.js` | データの読み込み・カード化・レア度（DOM非依存） |
 | `js/progress.js` | 経験値・レベル・実績・連続来訪（DOM非依存、localStorage に保存） |
 
-ビルドは不要です。`python3 -m http.server` などで配信するだけで動きます。
+ビルドは不要です。`main` に push すると GitHub Actions がテストを通してから GitHub Pages に公開します（リポジトリの Settings → Pages で Source を **GitHub Actions** にしておく）。`python3 -m http.server` などで配信するだけで動きます。
 
 ## テスト
 
